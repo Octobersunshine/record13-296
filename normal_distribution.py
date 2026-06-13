@@ -1,12 +1,18 @@
+import warnings
 import numpy as np
+
+
+def _normalize_std(std: float) -> float:
+    if std < 0:
+        warnings.warn(f"标准差为负数（{std}），已自动取绝对值", UserWarning, stacklevel=3)
+        return abs(std)
+    return std
 
 
 class NormalDistributionService:
     def __init__(self, mean: float = 0.0, std: float = 1.0, seed: int | None = None):
-        if std <= 0:
-            raise ValueError("标准差必须为正数")
         self.mean = mean
-        self.std = std
+        self.std = _normalize_std(std)
         self._rng = np.random.default_rng(seed)
 
     def generate(self, size: int = 1) -> np.ndarray:
@@ -24,9 +30,7 @@ class NormalDistributionService:
         if mean is not None:
             self.mean = mean
         if std is not None:
-            if std <= 0:
-                raise ValueError("标准差必须为正数")
-            self.std = std
+            self.std = _normalize_std(std)
 
     def stats(self, samples: np.ndarray) -> dict:
         return {
@@ -44,8 +48,7 @@ def generate_normal(
     size: int = 1,
     seed: int | None = None,
 ) -> np.ndarray:
-    if std <= 0:
-        raise ValueError("标准差必须为正数")
+    std = _normalize_std(std)
     if size <= 0:
         raise ValueError("样本数量必须为正整数")
     rng = np.random.default_rng(seed)
